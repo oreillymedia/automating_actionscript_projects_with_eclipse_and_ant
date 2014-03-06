@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Main Build file" basedir=".">
+	<!-- Import Growl Classes so we can send notifications via Growl -->
+	<taskdef name="growl" classname="net.slimeslurp.growl.GrowlEcho" />
+	
+	<!-- Import TODOTask so we can get out all //TODO: //FIXME: from src folder. -->
+	<taskdef name="todo" classname="org.atc.tools.ant.TODOTask" />
+
+	<!-- Load project.properties file -->
+	<property file="ant/build.properties" />
+	<property file="ant/sdk.properties" />
+	<fdt.loadProjectProperties />
+	<buildnumber file="ant/${project.name}.number" />
+
+	<!-- Create Timestamp for file name. Format like so: 09/24/2009 05:33:22 
+		PM -->
+	<target name="create-timestamp" description="Create a timestamp">
+		<tstamp>
+			<format property="current.date.time" pattern="dd_MM_yyyy_HH_mm" />
+			<format property="current.date.time.readable" pattern="dd-MM-yyyy HH:mm" />
+		</tstamp>
+		<growl message="Current date / time ${current.date.time}" />
+		<growl message="Current date / time ${current.date.time.readable}" />
+	</target>
+</project>

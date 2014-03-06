@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Compiling to iOS" basedir=".">
+
+	<!-- Import all properties etc. -->
+	<import file="build.xml" as="build" />
+	<import file="air.xml" as="air" />
+	<property file="ant/air.properties" />
+	<property file="ant/ios.properties" />
+	<property file="ant/certificate.properties" />
+
+	<target name="package-to-ios" depends="air.compile-to-air">
+		<java jar="${sdk.adt.compiler}" fork="true" failonerror="true">
+			<arg line="-package" />
+			<arg line="-target" />
+			<arg line=" ipa-debug" />
+			<arg line="-storetype" />
+			<arg line="pkcs12" />
+			<arg line="-keystore" />
+			<arg line="${certificate.ios.cert.file.path}" />
+			<arg line="-storepass" />
+			<arg line="${certificate.ios.password}" />
+			<arg line="-provisioning-profile" />
+			<arg line="${certificate.ios.provisioning.file.path}" />
+			<arg line="${project.publish.path}${file.separator}${ios.app.file}" />
+			<arg line="${ios.app.descriptor}" />
+			<arg line="${project.build.path}${file.separator}${project.output.swf}" />
+			<arg line="${ios.app.icon.path}iOSicon-29.png" />
+			<arg line="${ios.app.icon.path}iOSicon-57.png" />
+			<arg line="${ios.app.icon.path}iOSicon-512.png" />
+			<arg line="${ios.app.icon.path}Default.png" />
+		</java>
+		<growl message="Packaging iOS Application completed." />
+		<eclipse.refreshLocal resource="${project.name}" depth="infinite" />
+	</target>
+</project>

@@ -1,0 +1,61 @@
+$Id: TODO,v 1.16 2003/12/29 02:28:55 dfs Exp $
+
+o unit tests
+
+o redo/update build.xml file to conform to latest jakarta practices
+
+o distribute separate binary and source releases to cut down on size
+  of download for people who just want the libraries.
+
+o Optimize/improve Unicode character classes.
+
+o Fix any pending issues listed in ISSUES file or issue tracking system.
+
+o Update org.apache.oro.text.regex and org.apache.oro.text.perl syntax to 
+  latest version of Perl, currently version 5.8.  This will require
+  a lot of work.
+
+o Pattern cache implementations are probably not very efficient.
+  Should revisit and reimplement. 
+
+o Look for ways to avoid creating unnecessary String instances and
+  potential cases of redundant String/char[] conversions.
+
+o The MatchAction, MatchActionInfo, and MatchActionProcessor classes
+  need to be updated and improved upon.  Even though they were probably
+  a bad idea to have created in the first place, people do use them.
+
+o Reduce the memory overhead of case insensitive matching in Perl5Matcher.
+
+o Measure performance of HotSpot iterating through match input via
+  an interface's virtual function versus direct character array indexing.
+  If HotSpot dynamically inlines the functions and achieves comparable
+  performance, provided a clear warning is indicated that performance
+  could be reduced on earlier JDK versions, could create a generic interface
+  for representing input. Input array indexing could be replaced with
+  the generic interface, PatternMatcherInput could be made to implement
+  the interface, and stream matching could be reintroduced.
+  Reintroduced stream matching could include a callback mechanism in the
+  interface to report when a "contains" match has been found to allow
+  the input encapsulator to trim its buffer.  Strong warnings must go
+  into the documentation referencing the ACM paper and noting that for
+  many streams it will be more efficient to read the entire stream into
+  a buffer first rather than try to match incrementally because many
+  regular expressions will cause the whole stream to be read in anyway.
+  For situations where that is not the case we want to be able to trim
+  the buffer (there have been people who used OROMatcher to search
+  gigabyte length files!).  Additional methods could be added to
+  regulate buffer growth behavior, whether to save all of it for reuse
+  in a future pass, etc.
+  
+o Make separate src and bin distributions.  Current distribution is
+  getting big on account of 1.2 MB of API docs.  src only distribution
+  should be half the size of bin distribution for quicker download.
+
+o Write user's guide and FAQ.
+
+o Update javadocs to take advantage of more recent features for
+  using the same documentation in multiple places without
+  writing it multiple times.  Also get rid of all JDK 1.4 javadoc
+  warnings.
+

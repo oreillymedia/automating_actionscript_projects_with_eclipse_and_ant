@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<application xmlns="http://ns.adobe.com/air/application/2.7">
+	<id>com.sample.Main</id>
+	<name>My Funky App</name>
+	<filename>MyFunkyApp</filename>
+	<versionNumber>1.0.0</versionNumber>
+	<copyright>Copyright (c) 2011 Sidney de Koning</copyright>
+	<installFolder>Adobe Air/MyFunkyApp</installFolder>
+
+	<description>
+		<text xml:lang="en">Here comes my install description</text>
+	</description>
+
+	<supportedProfiles>mobileDevice</supportedProfiles>
+
+	<initialWindow>
+		<title>MyFunkyApp</title>
+		<content>build/Main.swf</content>
+		<transparent>false</transparent>
+		<visible>true</visible>
+		<minimizable>true</minimizable>
+		<maximizable>false</maximizable>
+		<resizable>true</resizable>
+		<renderMode>auto</renderMode>
+		<width>480</width>
+		<height>800</height>
+		<minSize>480 800</minSize>
+		<maxSize>1280 960</maxSize>
+		<!-- <width>640</width> <height>480</height> <minSize>320 240</minSize> 
+			<maxSize>1280 960</maxSize> -->
+	</initialWindow>
+	<icon>
+		<image29x29>assets/icons/iOSicon-29.png</image29x29>
+		<image57x57>assets/icons/iOSicon-57.png</image57x57>
+		<image512x512>assets/icons/iOSicon-512.png</image512x512>
+	</icon>
+
+	<iPhone>
+		<InfoAdditions>
+        <![CDATA[
+            <key>UIDeviceFamily</key>
+            <array>
+                <string>1</string>
+            </array>
+            <key>UIRequiresPersistentWiFi</key>
+            <string>NO</string>
+        	<key>UIApplicationExitsOnSuspend</key>
+        	<string>YES</string>
+        ]]>
+		</InfoAdditions>
+	</iPhone>
+	<customUpdateUI>true</customUpdateUI>
+	<allowBrowserInvocation>false</allowBrowserInvocation>
+</application>

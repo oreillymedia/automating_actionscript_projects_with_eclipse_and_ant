@@ -1,0 +1,245 @@
+$Id: CHANGES,v 1.37 2003/12/29 02:22:51 dfs Exp $
+
+Version 2.0.8
+ o examples moved to an examples package and com.oroinc migration tool
+   moved to tools package.
+
+ o Fixed bug whereby compiling an expression with
+   Perl5Compiler.MULTILINE_MASK wasn't always having the proper effect
+   with respect to the matching of $ even though
+   Perl5Matcher.setMultiline(true) exhibited the proper behavior.  For
+   example, the following input
+    " aaa bbb \n ccc ddd \n eee fff "
+   should produce "bbb ", "ddd ", and "fff " as matches for both the
+   patterns "\S+\s*$" and "\S+ *$" when compiled with MULTILINE_MASK.
+   Perl5Matcher was only producing the correct matches for the second
+   pattern, producing only "fff " as a match for the first pattern
+   unless setMultiline(true) had been called.  This has now been fixed.
+
+ o Fixed embarrassing bug whereby an expression like (A)(B)((C)(D))+
+   when matched against input like ABCDE would produce matching groups
+   of: "A" "B" "" null "D" instead of "A" "B" "CD" "C" "D".
+
+Version 2.0.7
+ o Made Perl5Util.toString() return null if no match exists in keeping
+   with the MatchResult interface.  Previously, a NullPointerException
+   was being thrown.
+
+ o Fixed problem whereby an AwkMatchResult resulting from a match on an
+   AwkStreamInput source (AwkMatcher.contains(AwkStreamInput, Pattern);)
+   would contain offsets relative to the buffered input rather than to where
+   the input stream was first read from (usually the beginning of the stream).
+
+ o Added support for negating modifiers.  For example (?-i)foo.  Note,
+   we still do not support Perl 5.005+ group-local modifiers such as
+   (?imsx-imsx:pattern).
+
+Version 2.0.7-dev-1
+
+o Fixed a problem whereby offset information for captured groups was
+  considered out of bounds when capturing parentheses occurred in a
+  lookahead assertion that was not part of the actual match (occurring
+  immediately after the match).
+
+o Changed processMatches to take Reader and Writer arguments.  Reimplemented
+  old method in terms of new method.  Added a version of old method that
+  allows you to specify input encoding.  Changes suggested by Harald Kuhn.
+
+o Changed behavior of Perl5Util.split() to match Perl's  behavior, where
+ "leading empty fields are preserved, and empty trailing one are
+ deleted."  Util.split() is left unchanged.
+
+Version 2.0.6
+
+o Added $& as a valid interpolation variable for Perl5Substitution.
+  The behavior of $0 was changed from undefined to the same as $&,
+  but it should be avoided since $0 no longer means the same thing
+  as $& in Perl.  Only use $& if possible.
+
+o Removed some leftover references to OROMatcher in the Perl5Util javadocs.
+
+o Added an int substitute(...) method to Perl5Util to correspond to
+  the similar method added to org.apache.oro.text.regex.Util in v2.0.3
+
+o Removed ant and support jars from distribution and moved build.xml to
+  top level directory.  From now on, you must have ant installed on your
+  system to build the source.
+
+o Added a strings.java example to the awk examples, better demonstrating
+  the character encoding issues associated with AwkMatcher's 8-bit
+  character set limitation.
+
+Version 2.0.5
+
+o Fixed [[:upper:]] so it would match lower case characters during case
+  insensitive matches.
+
+o Fixed [[:punct:]] (which also affected [[:print:]] and [[:graph:]])
+  to conform to Single Unix Specification (some characters had been
+  omitted).
+
+o Fixed bug whereby a - in a Perl expression would be ignored when
+  it followed a builtin character class like \w.  In other words,
+  [\w-] behavig like \w instead of like [-\w].  The regression was 
+  introduced with the unicode character class patch from version 2.0.2.
+
+Version 2.0.4
+
+o Deprecated Vector Perl5Util.split(String input) and replaced with
+  void Perl5Util.split(Collection results, String input).  This
+  should have been done in an earlier release along with the other
+  split methods, but this method slipped through the cracks.
+
+o Fixed bug in AwkMatcher that didn't properly handle PatternMatcherInput
+  matches when PatternMatcherInput had a non-zero begin offset.
+ 
+o Added code to Perl5Matcher to handle bytecode generated for [[:alpha:]].
+  [[:alpha:]] would compile but not be interpreted.
+
+o Fixed problem whereby MatchActionProcessor would never set
+  MatchActionInfo.pattern before calling MatchAction.processAction.
+  Also changed MatchActionInfo.fields from Vector to List.
+
+o Added semicolon.txt input file for the semicolon.java example program.
+
+o Fixed bug where RegexFilenameFilter() constructor with options argument
+  would not use the options in compiling the expression.
+
+o Added READ_ONLY_MASK compilation option to GlobCompiler
+
+Version 2.0.3
+
+o Changed version information in javadocs to correspond to release
+  version rather than CVS version.
+
+o Changed the backing store for GenericCache from Hashtable to Hashmap.
+
+o Fixed a problem in Perl5Debug.printProgram where it wouldn't handle
+  the printing of the unicode character class bytecode correctly.
+
+o Added links to Jakarta ORO home page in javadocs and converted
+  web site documentation to jakarta-site2 xml docs stored in xdocs
+  directory.
+
+o Applied Mark Murphy's patch to add case modification support to
+  Perl5Substitution.  The \u\U\l\L\E escapes from Perl5 double-quoted
+  string handling are now recognized in a substitution expression.
+
+o Made a backwards-incompatible change in the Substitution interface.
+  The input parameter is now a PatternMatcherInput instance instead
+  of a String.  A new substitute method was added to Util to allow
+  programmers to reduce the number of string copies in the existing
+  substitute() implementation.  This required that the Substitution
+  interface be changed.  The existing Substitution implementing classes
+  do not use the input parameter and it is very easy for anyone
+  implementing the Substitution interface in a custom class to update
+  their class to the new interface.  A deprecation phase was skipped
+  because it would have still required implementors of the interface
+  to implement a method with the new signature.
+
+Version 2.0.2
+
+o Fixed default behavior of '.' in awk package.  Previously it wouldn't
+  match newlines, which isn't how AWK behaves.  The default behavior now
+  matches any character, but a compilation mask (MULTILINE_MASK) has been
+  added to AwkCompiler to enable the old behavior.
+
+o Replaced the use of Vector with ArrayList in Perl5Substitution.
+
+o Replaced the use of deprecated Perl5Util split method in printPasswd
+  example with newer method.  Also updated splitExample to use
+  ArrayList instead of Vector.
+
+o Updated RegexFilenameFilter to also implement the Java 1.1 FileFilter
+  interface.
+
+o Applied a follow up to Takashi Okamoto's unicode/posix patch that
+  implemented negative posix character classes (e.g., [[:^digit:]])
+
+Version 2.0.2-dev-2
+
+o Applied a modified version of Takashi Okamoto's unicode/posix patch.
+  It adds unicode support to character classes and adds partial support
+  for posix classes (it supports things like [:digit:] and [:print:], but
+  not [:^digit:] and [:^print:]).  It will be improved/optimized later, but
+  gives people the functionality they need today.
+
+Version 2.0.2-dev-1
+
+o Removed commented out code and changed OpCode._isWordCharacter() to
+  use Character.isLetterOrDigit()
+
+o Some documentation fixes.
+
+o Perl5Matcher was not properly tracking the current offset in
+  __interpret so PatternMatcherInput would not have its current offset
+  properly updated.  This bug was introduced when fixing the
+  PatternMatcherInput anchor bug.  When the currentOffset parameter
+  was added to __interpret, not all of the necessary
+  __currentOffset = beginOffset assignments were changed to
+  __currentOffset = currentOffset assignments.  This has been
+  fixed by updating the remaining assignments.
+
+o The org.apache.oro.text.regex.Util.split() method was further 
+  generalized to accept a Collection reference argument to store the result.
+
+Version 2.0.1
+
+o Jeff ? (jlb@houseofdistraction.com) and Peter Kronenberg
+  (pkronenberg@predictivetechnologies.com) identified a bug in the
+   behavior of PatternMatcherInput matching methods with respect to
+   anchors (^).  Matches were always being performed interpreting the
+   beginning of the string from either a 0 or a current offset rather
+   than from the beginOffset.  Essentially, the beginning of the string
+   for purposes of matching ^ wasn't being associated with beginOffset.
+  This problem has been fixed.
+
+o A problem with multiline matches that was introduced in the
+  transition from OROMatcher/Perltools/etc. to Jakarta-ORO
+  was fixed.
+
+o The org.apache.oro.text.regex.Util.split() method was generalized to 
+  accept a List reference argument to store the result.
+
+Version 2.0
+
+Many small, but important, changes have been made to this software
+between its last release as ORO software and its first release as part
+of the Apache Jakarta project.  The last versions of the ORO software
+were:
+	OROMatcher 1.1 (com.oroinc.text.regex)
+	PerlTools  1.2 (com.oroinc.text.perl)
+	AwkTools   1.0 (com.oroinc.text.awk)
+	TextTools  1.1 (com.oroinc.io, com.oroinc.text, com.oroinc.util)
+
+OROMatcher 1.1 was fully compatible with Perl 5.003 regular expressions.
+Many changes have been made to the regular expression behavior in
+successive versions of Perl.  The goal is to update org.apache.oro.text.regex
+to the latest version of Perl (5.6 at this time), but only some of this
+work has been done.
+
+o Guaranteed compatibility with JDK 1.1 is discontinued.  JDK 1.2 features
+  may be used indiscriminately, even though they may not have been used
+  at this time.
+
+o Perl5StreamInput and methods manipulating Perl5StreamInput have been
+  removed.  For the technical reasons behind this decision see
+  "On the Use of Regular Expressions for Searching Text", Clark and Cormack,
+  ACM Transactions on Programming Languages and Systems, Vol 19, No. 3,
+  pp 413-426.
+
+o Default behavior of '^' and '$' as matched by Perl5Matcher has
+  changed to match as though in single line mode, which appears to be
+  the Perl default.  Previously if you did not specify single line or
+  multi-line mode, '^' and '$'  would act as though in multi-line mode.
+  Now they act as though in single line mode, unless you specify otherwise
+  with setMultiline() or by compiling the expression with an appropriate mask.
+  However, '.' acts as in multi-line mode by default and its behavior
+  can only be altered by compiling an expression with SINGLELINE_MASK.
+  setMultiline() emulates the Perl $* variable, whereas the MASK variables
+  emulate the ismx modifiers.
+
+o All deprecated methods have been removed.  This includes various
+  substitute() convenience methods from com.oroinc.text.regex.Util
+
+o Javadoc comments have been updated to use 1.2 standard doclet features.

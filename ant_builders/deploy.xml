@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Deploying Flash Project" basedir=".">
+
+	<!-- Import all properties etc. -->
+	<import file="build.xml" as="build" />
+	<import file="compile.xml" as="compile" />
+	<property file="ant/remote.properties" />
+	
+	<target name="0.generate-info-class" description="Create an info class that show information when right clikced in the SWF" depends="build.create-timestamp">
+		<echo file="${project.classpath}Version${project.file.extension}">
+			package ${project.classpath.clean}
+			{
+				import flash.display.Sprite;
+				import flash.events.ContextMenuEvent;
+				import flash.ui.ContextMenu;
+				import flash.ui.ContextMenuItem;
+				import flash.net.URLRequest;
+				import flash.net.navigateToURL;
+				import ${project.classpath.clean}.utils.ApplicationUtils;
+				
+				/**
+				 * @author ${user.name}
+				 */
+				public class Version
+				{
+					public static var DATE:String = "${current.date.time.readable}";
+					public static var PROJECT_NAME:String = "${project.name}";
+					public static var BUILT_ON:String = "${os.name} ${os.version}";
+					public static var BUILD_NUMBER:String = "${build.number}";
+					public static var USER_NAME:String = "${user.name}";
+					
+					public function Version( menuSprite : Sprite) 
+					{
+						var cm : ContextMenu = new ContextMenu();
+						cm.hideBuiltInItems();
+						
+						switch(ApplicationUtils.getDevelopmentMode()) {
+									
+							case ApplicationUtils.DEVELOPMENT:
+								// Do specific deveopment stuff here
+								cm.customItems.push(new ContextMenuItem("Project : " + Version.PROJECT_NAME));
+								cm.customItems.push(new ContextMenuItem("Date : " + Version.DATE));
+								cm.customItems.push(new ContextMenuItem("Built on : " + Version.BUILT_ON));
+								cm.customItems.push(new ContextMenuItem("Built by : " + Version.USER_NAME));
+								cm.customItems.push(new ContextMenuItem("Built # : " + Version.BUILD_NUMBER));
+								
+								break;
+							case ApplicationUtils.PRODUCTION:
+								// Do specific production stuff here
+								cm.customItems.push(new ContextMenuItem("Project : " + Version.PROJECT_NAME));
+								cm.customItems.push(new ContextMenuItem("Date : " + Version.DATE));
+								cm.customItems.push(new ContextMenuItem("Built on : " + Version.BUILT_ON));
+								cm.customItems.push(new ContextMenuItem("Built # : " + Version.BUILD_NUMBER));
+								break;
+						}
+			
+						var notice : ContextMenuItem = new ContextMenuItem( "My Company Name, Year" );
+						notice.enabled = true;
+						notice.separatorBefore = true;
+						notice.addEventListener( ContextMenuEvent.MENU_ITEM_SELECT, menuItemSelect );
+						cm.customItems.push( notice );
+			
+						menuSprite.contextMenu = cm;
+					}
+						
+					private function menuItemSelect(evt : ContextMenuEvent) : void {
+						navigateToURL(new URLRequest("${remote.http.server}"));
+					}
+				}
+			}
+		</echo>
+		<eclipse.refreshLocal resource="${project.name}" depth="infinite" />
+	</target>
+
+	<target name="1.generate-html-template">
+		<echo output="${project.template.path}${file.separator}index.html" append="false">
+			<![CDATA[<html>
+				<head>
+					<title>@html.title@</title>
+					
+					<style type="text/css" media="screen">
+						body { 
+							margin:0; padding:0; 
+							text-align:center; 
+							background-color: #@html.bgcolor@; 
+							font-family:Verdana, Arial, sans-serif;
+						}
+						#container { 
+							margin:0px auto; 
+							width:@html.width@px; 
+							text-align:left; 
+						}
+					</style>	
+					<script 
+						type="text/javascript" 
+						language="javaScript"
+						src="http://ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js"></script>
+					<script type="text/javascript">
+
+					var flashvars  = {};
+								
+					var params = {};
+						params.base = "static/swf";
+						params.allowScriptAccess = "always";
+						
+					var attributes = {};
+						attributes.id = "application";
+
+					swfobject.embedSWF("static/swf/@html.swf.location@", "content", "@html.width@", "@html.height@", "10.0.0");
+					
+					</script>
+				</head>
+				<body>
+					<div id="container">
+						<div id="content">
+							<h1>Alternative content</h1>
+							<p><a href="http://www.adobe.com/go/getflashplayer">
+							<img src="http://www.adobe.com/images/shared/download_buttons/get_flash_player.gif" alt="Get Adobe Flash player" /></a></p>
+						</div>
+					</div>
+				</body>
+			</html>]]>
+		</echo>
+		<antcall target="2.replace-token" />
+		<eclipse.refreshLocal resource="${project.name}" depth="infinite" />
+	</target>
+	
+	<target name="2.replace-token" description="Do the actual replacing of tokens in generated html file">
+		<replace file="${project.template.path}${file.separator}index.html" propertyFile="ant${file.separator}build.properties">
+			<replacefilter token="@html.title@" property="project.name"/>
+			<replacefilter token="@html.bgcolor@" property="html.bgcolor"/>
+			<replacefilter token="@html.width@" property="html.width"/>
+			<replacefilter token="@html.height@" property="html.height"/>
+		</replace>
+		<!-- Since @html.swf.location@ is not defined in the property file, we need another replace task -->
+		<replace file="${project.template.path}${file.separator}index.html">
+			<replacefilter token="@html.swf.location@" value="${project.output.swf}"/>
+		</replace>
+		<eclipse.refreshLocal resource="${project.name}" depth="infinite" />
+	</target>
+	
+	<target name="3.prepare-deployment" description="Prepare all directories and copy file to a webfolder that later can be uploaded" depends="5.clean">
+		<mkdir dir="${project.web.path}${file.separator}static${file.separator}"/>
+		<mkdir dir="${project.web.path}${file.separator}static${file.separator}swf" />
+		<copy todir="${project.web.path}${file.separator}static${file.separator}swf" flatten="true">
+			<resources>
+				<file file="${project.bin.path}${file.separator}${project.output.swf}"/>
+			 </resources>
+		</copy>
+		<copy todir="${project.web.path}" flatten="true">
+			<fileset dir="${project.template.path}"/>
+		</copy>
+		<delete dir="${project.template.path}"/>
+		<eclipse.refreshLocal resource="${project.name}" depth="infinite" />
+	</target>
+	
+	<target name="4.upload-to-webserver">
+		<input message="Please enter your FTP password:" addproperty="remote.ftp.password" defaultvalue="" />
+		<!-- upload the files to the new directory -->
+		<ftp server		= "${remote.ftp.server}"
+	         port		= "${remote.ftp.port}"
+	         remotedir	= "${remote.ftp.dir}${file.separator}clients${file.separator}${project.name}"
+	         userid		= "${remote.ftp.username}"
+	         password	= "${remote.ftp.password}"
+	         verbose	= "${remote.ftp.verbose}"
+	         depends	= "${remote.ftp.depends}"
+	         binary		= "${remote.ftp.binary}"
+	         passive	= "${remote.ftp.passivemode}">
+            <fileset dir= "${project.web.path}" />
+	    </ftp>
+		<growl message="Directory ${project.web.path} copied to FTP server ${remote.ftp.server}" />
+		<growl message="FTP Transfer Complete." />
+	</target>
+	
+	<target name="5.clean" description="cleans all leftovers">
+		<delete dir="${project.web.path}"/>
+		<delete dir="${project.deploy.path}" />
+		<delete dir="${project.zip.path}" />
+	    <eclipse.refreshLocal resource="${project.name}" depth="infinite" />
+	</target>
+	
+	<target name="6.test-in-browser" depends="compile.compile, 0.generate-info-class, 1.generate-html-template, 3.prepare-deployment, 4.upload-to-webserver">   	
+		<fdt.viewDocument location="${remote.http.server}clients${file.separator}${project.name}${file.separator}index.html"/>          
+	</target>
+	
+	<target name="7.cleanup-and-export" depends="6.test-in-browser">
+		<mkdir dir="${project.deploy.path}" />
+		<mkdir dir="${project.zip.path}" />
+		<copy overwrite="true" todir="${project.zip.path}">
+			<fileset dir="${project.web.path}/">
+				<exclude name="**/.settings/**" />
+				<exclude name="**/*.as3_classpath" />
+				<exclude name="**/*.project" />
+				<exclude name="**/.svn/**" />
+			</fileset>
+		</copy>
+		<eclipse.refreshLocal resource="${project.name}" depth="infinite" />
+	</target>
+	
+	<target name="8.create-deployment-zip" description="Create a zip file that holds all the files for a complete deployment" depends="7.cleanup-and-export">
+		<zip file="${project.deploy.path}${file.separator}${project.name}_${current.date.time}.zip">
+			<fileset dir="${project.zip.path}/">
+				<include name="**/*" />
+			</fileset>
+		</zip>
+		<property name="deployment.zip.file" value="${project.deploy.path}${file.separator}${project.name}_${current.date.time}.zip"/>
+
+		<!-- delete the deploy files from the file system -->
+		<delete dir="${project.zip.path}/" />
+		<eclipse.refreshLocal resource="${project.name}" depth="infinite" />
+	</target>
+	
+	<target name="9.copy-to-networkshare" depends="8.create-deployment-zip">
+		<growl message="Copying file with name: ${deployment.zip.file}"/>
+		<growl message="To the this location:   ${share.project}${share.project.dir}"/>
+		<copy 
+			todir="${share.project}${share.project.dir}" 
+			file="${deployment.zip.file}"
+		/>
+	</target>
+		
+	<target name="10.create-backup-zip" description="Create a zip file that holds all the project files" depends="build.create-timestamp">
+		<zip file="${project.backup.path}${file.separator}backup_${project.name}_${current.date.time}.zip">
+			<fileset dir="${basedir}/">
+				<include name="**/*" />
+				<exclude name="**/.settings/**" />
+				<exclude name="**/*.as3_classpath" />
+				<exclude name="**/*.project" />
+				<exclude name="**/.svn/**" />
+			</fileset>
+		</zip>
+		<eclipse.refreshLocal resource="${project.name}" depth="infinite" />
+	</target>
+	
+	<target name="make-todo-list">
+		<todo dir="src" property="todo.list" verbose="true">
+			<include name="**/*.as" />
+		</todo>
+		<eclipse.refreshLocal resource="${project.name}" depth="infinite" />
+	</target>
+
+	<target name="11.email-with-attachment-and-todo" depends="make-todo-list, 8.create-deployment-zip">
+		<input message="Add an additional message to the deployment or service desk." addproperty="email.deployment.service.message" />
+		<mail mailhost="smtp.euronet.nl" mailport="25" subject="Deployment">
+		  <from address="me_email@euronet.nl"/>
+		  <replyto address="me_email@euronet.nl"/>
+		  <to address="sidney.dekoning@gmail.com"/>
+		  <message>Hello,
+Can you deploy this file to the staging server on:
+${remote.http.server}
+
+Please note the following:
+
+${email.deployment.service.message}
+
+Kind regards,
+${user.name}</message>
+		  <attachments>
+		    <fileset dir="${project.deploy.path}">
+		      <include name="**/*.zip"/>
+		    </fileset>
+		  </attachments>
+		</mail>
+		<input message="Add an additional message to project mananger" addproperty="email.pm.message" />
+		<mail mailhost="smtp.euronet.nl" mailport="25" subject="Open TODO items">
+		  <from address="me_email@euronet.nl"/>
+		  <replyto address="me_email@euronet.nl"/>
+		  <to address="sidney.dekoning@gmail.com"/>
+		  <message>Hello Mr. Project Mananger,
+This is my open TODO list for today:
+
+${todo.list}
+		  	
+Please note the following:
+
+${email.pm.message}
+
+Kind regards,
+${user.name}</message>
+		</mail>
+		<mail mailhost="smtp.euronet.nl" mailport="25" subject="Dont forget!" tolist="sidney.dekoning@gmail.com, sidney@funky-monkey.nl">
+			<from address="me_email@euronet.nl"/>
+			<replyto address="me_email@euronet.nl"/>
+			<message>Hi team, 
+Don't forget, this list is still open todo: 
+				
+${todo.list}
+				
+Kind regards,
+${user.name}</message>
+		</mail>
+	</target>
+</project>

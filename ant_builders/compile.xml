@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Compiling Flash Project" basedir=".">
+
+	<!-- Import all properties etc. -->
+	<import file="build.xml" as="build"/>
+	
+	<target name="trace" description="Trace out path properties">
+		<echo message="SDK Location :	${sdk.location}" />
+		<echo message="SDK Libs Compiler	:${sdk.mxmlc.compiler}" />
+		<echo message="SDK Libs Loc	:	${sdk.libs.location}" />
+		<echo message="Classpath	:	${project.classpath}" />
+		<echo message="BaseDir	:	${basedir}" />
+	</target>
+	
+	<target name="clean" description="Purge the contents of the bin dir">
+        <delete dir="${project.bin.path}"/>
+        <delete dir="${project.debug.path}"/>
+        <echo message="Cleaning up shit" />
+        <eclipse.refreshLocal resource="${project.name}" depth="infinite" />
+    </target>
+    
+	<target name="compile" description="Compile an SWF with MXMLC Compiler" depends="build.create-timestamp">			
+		<java jar="${sdk.mxmlc.compiler}" fork="true" failonerror="true">
+			<arg value="-debug=false" />
+			<arg value="-optimize=true" />
+			<arg value="-verbose-stacktraces=true" />
+			<arg value="+flexlib=${sdk.libs.framework}" />
+			<arg value="-source-path=${project.src.path}" />
+			<arg value="-library-path=${sdk.libs.location}" />
+			<arg value="-file-specs=${project.classpath}${project.document.class}${project.file.extension}" />
+			<arg value="-output=${project.bin.path}${file.separator}${project.document.class}_${current.date.time}.swf" />
+		</java>
+		<property name="project.output.swf" value="${project.document.class}_${current.date.time}.swf"/>
+
+		<eclipse.refreshLocal resource="${project.name}" depth="infinite" />
+	</target>
+	
+	<target name="debug" description="Debug an SWF with MXMLC Compiler" depends="build.create-timestamp">			
+		<java jar="${sdk.mxmlc.compiler}" fork="true" failonerror="true">
+			<arg value="-debug=true" />
+			<arg value="-optimize=true" />
+			<arg value="-verbose-stacktraces=true" />
+			<arg value="+flexlib=${sdk.libs.framework}" />
+			<arg value="-source-path=${project.src.path}" />
+			<arg value="-library-path=${sdk.libs.location}" />
+			<arg value="-file-specs=${project.classpath}${project.document.class}${project.file.extension}" />
+			<arg value="-output=${project.debug.path}${file.separator}${project.document.class}_DEBUG_${current.date.time}.swf" />
+		</java>
+		<eclipse.refreshLocal resource="${project.name}" depth="infinite" />
+	</target>
+</project>

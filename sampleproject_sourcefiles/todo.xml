@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Generate TODO items file" basedir="." default="make-todo-list">
+
+	<taskdef name="todo" classname="org.atc.tools.ant.TODOTask" />
+
+	<target name="make-todo-list">
+		<todo dir="src" property="my.prop" verbose="true">
+			<include name="**/*.as" />
+		</todo>
+	</target>
+
+	<target name="all-test" depends="make-todo-list">
+		<echo message="${my.prop}" />
+	</target>
+</project>

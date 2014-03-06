@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Compiling to AIR for Android" basedir=".">
+
+	<!-- Import all properties etc. -->
+	<import file="build.xml" as="build" />
+	<import file="air.xml" as="air" />
+	<property file="ant/air.properties" />
+	<property file="ant/android.properties" />
+	<property file="ant/certificate.properties" />
+
+	<target name="android-create-new-certificate">
+		<mkdir dir="${certificate.location.path}" />
+		<java jar="${sdk.adt.compiler}" fork="true" failonerror="true" logError="true">
+			<arg value="-certificate" />
+			<arg value="-cn" />
+			<arg value="${certificate.name}" />
+			<arg value="-ou" />
+			<arg value="${certificate.organisation.unit}" />
+			<arg value="-o" />
+			<arg value="${certificate.organisation.name}" />
+			<arg value="-c" />
+			<arg value="${certificate.organisation.country}" />
+			<arg value="-validityPeriod" />
+			<arg value="${certificate.validity.years}" />
+			<arg value="${certificate.organisation.keystrength}" />
+			<arg value="${project.build.path}${file.separator}${certificate.name}.${certificate.android.extension}" />
+			<arg value="${certificate.password}" />
+		</java>
+		<growl message="Created a new Self Signed Certificate" />
+		<eclipse.refreshLocal resource="${project.name}" depth="infinite" />
+	</target>
+
+	<target name="pakage-to-apk" depends="air.compile-to-air">
+		<java jar="${sdk.adt.compiler}" fork="true" failonerror="true">
+			<arg value="-package" />
+			<arg value="-target" />
+			<arg value="apk" />
+			<arg value="-storetype" />
+			<arg value="pkcs12" />
+			<arg value="-keystore" />
+			<arg value="${certificate.location.path}${file.separator}${certificate.name}.${certificate.android.extension}" />
+			<arg value="-storepass" />
+			<arg value="${certificate.password}" />
+			<arg value="${project.publish.path}${file.separator}${air.app.name}.${android.file.extension}" />
+			<arg value="${android.app.descriptor}" />
+			<arg value="${project.build.path}${file.separator}${project.output.swf}" />
+			<arg value="${android.app.icon.path}AIRApp_128.png" />
+			<arg value="${android.app.icon.path}AIRApp_48.png" />
+			<arg value="${android.app.icon.path}AIRApp_32.png" />
+			<arg value="${android.app.icon.path}AIRApp_16.png" />
+		</java>
+		<growl message="Packaging APK Application completed." />
+		<eclipse.refreshLocal resource="${project.name}" depth="infinite" />
+	</target>
+</project>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Compiling Flash Project with FDT Tasks" basedir=".">
+	
+	<!-- Import all properties etc. -->
+	<import file="build.xml" as="build"/>
+	
+	<target name="clean" description="Purge the contents of the bin dir">
+        <delete dir="${project.bin.path}"/>
+        <delete dir="${project.debug.path}"/>
+        <eclipse.refreshLocal resource="${project.name}" depth="infinite" />
+    </target>
+    
+	<target name="compile-fdt" description="Compile an SWF with FDT Ant Tasks" depends="build.create-timestamp">
+		<fdt.launch.resetFlexCompiler/>
+		<fdt.launch.application 
+			debug="false"  
+			projectname="${FDTProject}" 
+			mainclass="${project.classpath}${project.document.class}${project.file.extension}" 
+		    target="${project.bin.path}${file.separator}${project.document.class}_${current.date.time}.swf"
+			compilerarguments="-verbose-stacktraces=true"
+			startswf="true" 
+			swflauncher="External SWF Viewer"
+		/>
+		<growl message="Done compiling ${project.document.class}_${current.date.time}.swf" />
+		<eclipse.refreshLocal resource="${project.name}" depth="infinite" />
+	</target>
+	
+	<target name="debug-fdt" description="Debug an SWF with FDT Ant Tasks" depends="build.create-timestamp">
+		<fdt.launch.resetFlexCompiler/>
+		<fdt.startDebugger 
+			projectname="${FDTProject}" 
+			switchperspectiveonbreakpoint="true"
+		/>
+		
+		<fdt.launch.application 
+			debug="true"  
+			projectname="${FDTProject}" 
+			mainclass="${project.classpath}${project.document.class}${project.file.extension}" 
+		    target="${project.debug.path}${file.separator}${project.document.class}_DEBUG_${current.date.time}.swf"
+			compilerarguments="-verbose-stacktraces=true"
+			startswf="true" 
+			swflauncher="External SWF Viewer"
+		/>
+		<growl message="Done compiling ${project.document.class}_DEBUG_${current.date.time}.swf" />
+		<eclipse.refreshLocal resource="${project.name}" depth="infinite" />
+	</target>
+	
+	<!-- These can also be found on: http://fdt.powerflasher.com/docs/FDT_Ant_Tasks -->
+	<target name="echo-fdt-properties" description="Echo all of FDTs builtin properties for Ant">		
+		<echo message="${FDTProject}" />
+		<echo message="${FDTProjectPath}" />
+		<echo message="${FDTProjectSdkPath}" />
+		<echo message="${FDTProjectSdkName}" />
+		<echo message="${FDTProjectSdkVersion}" />
+		<echo message="${FDTProjectPlayerVersion}" />
+		<echo message="${FDTProjectKind}" />
+		<echo message="${FDTHostIP}" />
+	 </target>
+</project>

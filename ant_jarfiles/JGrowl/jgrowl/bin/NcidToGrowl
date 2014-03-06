@@ -1,0 +1,24 @@
+#!/bin/sh
+# $Id: NcidToGrowl,v 1.1 2006/10/17 22:06:25 smartin Exp $
+
+#
+# Start NcidToGrowl
+#
+
+# Setup the classpath, everything should be relative to this script
+
+LIB=`dirname $0`/../lib
+BINARYBLIZZARD=${LIB}/binaryblizzard.jar
+
+CLASSPATH=${BINARYBLIZZARD}
+
+# Exit this to capture stdout
+
+#OUTPUT=/dev/null
+OUTPUT=/tmp/NcidToGrowl
+
+#JAVADEBUG="-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=4000 -Xdebug -Xnoagent -Djava.compiler=NONE"
+#JAVA_HOME=/usr/local/java/jdk1.4
+MX=-Xmx4m
+${JAVA_HOME}/bin/java -classpath ${CLASSPATH} ${JAVADEBUG} ${MX} com.binaryblizzard.growl.NcidToGrowl -d $* 1>${OUTPUT} &
+exit 0

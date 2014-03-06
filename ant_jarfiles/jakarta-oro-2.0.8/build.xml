@@ -1,0 +1,291 @@
+<?xml version="1.0"?>
+<!--
+   $Id: build.xml,v 1.7 2003/12/29 03:47:08 dfs Exp $
+
+Notes:
+   This is a build file for use with the Jakarta Ant build tool.
+
+Prerequisites:
+
+   jakarta-ant from http://jakarta.apache.org/ant/index.html
+
+Build Instructions:
+   To build, run
+
+   ant <target>
+
+   in the directory where this file is located with the target you want.
+
+Available targets (default == jar):
+  clean          removes generated files
+  docs           builds xml documentation
+  examples       builds the example programs
+  jar            builds lib + jar
+  javadocs       builds the javadoc
+  lib            builds the library
+  package        builds lib + jar + javadoc + distribution
+  package-all    builds package-zip and package-tgz
+  package-tgz    builds a tarred and gzipped distribution
+  package-zip    builds a zipped distribution
+  tools          builds the tools
+
+Run ant -projecthelp for complete list of targets with descriptions.
+-->
+
+<project default="jar">
+
+  <!-- Allow properties following these statements to be overridden -->
+  <!-- Note that all of these don't have to exist.  They've just been defined
+       incase they are used. -->
+  <property file="build.properties"/>
+<!--
+  <property file=".ant.properties"/>
+  <property file="${user.home}/.ant.properties"/>
+  <property file="default.properties"/>  
+ -->
+
+    <!-- prepare target.  Creates build directories. -->
+
+    <target name="prepare"
+            description="Creates build directories.">
+       <tstamp>
+         <format property="DATE" pattern="yyyy-MM-dd hh:mm:ss" />
+       </tstamp>
+        <mkdir dir="${build.dest}"/>
+        <mkdir dir="${build.dest}/META-INF"/>
+        <copy todir="${build.dest}/META-INF">
+            <fileset dir="${top.dir}">
+                <include name="LICENSE"/>
+            </fileset>
+        </copy>
+        <mkdir dir="${build.tests}"/>
+        <available file="${jakarta-site2.dir}/lib" type="dir"
+                   property="AnakiaTask.present"/>
+    </target>
+
+    <target name="prepare-error" depends="prepare"
+            description="Prints error message for prepare target."
+	    unless="AnakiaTask.present">
+       <echo>
+        AnakiaTask is not present! Please check to make sure that 
+        velocity.jar is in your classpath.
+       </echo>
+    </target>
+
+    <!-- lib target.  Compiles the library classes only -->
+
+    <target name="lib" depends="prepare"
+            description="Compiles the library classes only.">
+        <javac srcdir="${build.src}"
+            destdir="${build.dest}"
+            excludes="examples/**,tools/**"
+            debug="${debug}"
+            deprecation="${deprecation}"
+            optimize="${optimize}"/>
+    </target>
+
+    <!-- examples target.  Compiles the example classes. -->
+
+    <target name="examples" depends="prepare,lib"
+            description="Compiles the example classes.">
+        <javac srcdir="${build.src}"
+            destdir="${build.dest}"
+            includes="examples/**"
+            debug="${debug}"
+            deprecation="${deprecation}"
+            optimize="${optimize}"/>
+    </target>
+
+    <!-- tools target.  Compiles the tool classes. -->
+
+    <target name="tools" depends="prepare,lib"
+            description="Compiles the tool classes.">
+        <javac srcdir="${build.src}"
+            destdir="${build.dest}"
+            includes="tools/**"
+            debug="${debug}"
+            deprecation="${deprecation}"
+            optimize="${optimize}"/>
+    </target>
+    
+    <!-- tests target.  Compiles and runs the unit tests. -->
+
+    <target name="tests" depends="prepare,lib"
+            description="Compiles and runs the unit tests.">
+        <javac srcdir="${build.src}/tests"
+            destdir="${build.tests}"
+            debug="${debug}"
+            deprecation="${deprecation}"
+            optimize="${optimize}"/>
+    </target>
+
+    <!-- jar target.  Compiles the source directory and creates a .jar file -->
+
+    <target name="jar" depends="lib"
+          description="Compiles the source directory and creates a .jar file.">
+        <jar jarfile="${top.dir}/${final.name}.jar"
+            basedir="${build.dest}"
+            includes="org/**,META-INF/**"
+            excludes="**/package.html,**/overview.html">
+          <manifest>
+            <section name="org/apache/oro">
+             <attribute name="Specification-Title"
+                     value="Jakarta ORO" />
+             <attribute name="Specification-Version"
+                     value="${version}" />
+             <attribute name="Specification-Vendor"
+                     value="Apache Software Foundation" />
+             <attribute name="Implementation-Title"
+                     value="org.apache.oro" />
+             <attribute name="Implementation-Version"
+                     value="${version} ${DATE}" />
+             <attribute name="Implementation-Vendor"
+                     value="Apache Software Foundation" />
+            </section>
+           </manifest>
+        </jar>
+    </target>
+
+    <!-- javadocs target.  Creates the API documentation -->
+
+    <target name="javadocs" depends="prepare"
+            description="Creates the API documentation.">
+        <mkdir dir="${javadoc.destdir}"/>
+        <javadoc packagenames="org.apache.oro.io,org.apache.oro.text,org.apache.oro.text.regex,org.apache.oro.text.awk,org.apache.oro.text.perl,org.apache.oro.util"
+            sourcepath="${build.src}"
+            destdir="${javadoc.destdir}"
+            overview="${build.src}/org/apache/oro/overview.html"
+            author="true"
+            version="true"
+            windowtitle="${name} ${version} API"
+            doctitle="${name} ${version} API"
+            header="&lt;a href=&apos;http://jakarta.apache.org/oro/&apos; target=_top&gt;&lt;img src=&apos;{@docroot}/../images/logoSmall.gif&apos; alt=&apos;Jakarta ORO&apos; width=48 height=47 align=center border=0 hspace=1 vspace=1&gt;&lt;/a&gt;"
+            bottom="Copyright &#169; ${year} Apache Software Foundation. All Rights Reserved.">
+         </javadoc>
+         <replace file="${javadoc.destdir}/overview-frame.html"
+                  token="{@docroot}" value="."/>
+         <replace dir="${javadoc.destdir}" includes="**/*.html"
+                  token="@version@" value="${version}"/>
+    </target>
+
+    <!-- docs target.  Creates project web pages and documentation. -->
+    <target name="docs" depends="prepare-error,lib,examples"
+          description="Creates the project web pages and documentation."
+	  if="AnakiaTask.present">
+      <taskdef name="anakia" classname="org.apache.velocity.anakia.AnakiaTask">
+          <classpath>
+            <fileset dir="${jakarta-site2.dir}/lib">
+              <include name="*.jar"/>
+            </fileset>
+          </classpath>
+	</taskdef>
+
+        <anakia basedir="${docs.src}" destdir="${docs.dest}/"
+        extension=".html" style="./site.vsl"
+        projectFile="stylesheets/project.xml"
+        excludes="**/stylesheets/** manual/** empty.xml"
+        includes="**/*.xml"
+        lastModifiedCheck="true"
+        templatePath="${jakarta-site2.dir}/xdocs/stylesheets">
+        </anakia>
+
+        <copy todir="${docs.dest}/images" filtering="no">
+            <fileset dir="${docs.src}/images">
+                <include name="**/*.gif"/>
+                <include name="**/*.jpeg"/>
+                <include name="**/*.jpg"/>
+            </fileset>
+        </copy>
+
+        <mkdir dir="${docs.dest}/classes"/>
+        <mkdir dir="${docs.dest}/classes/examples"/>
+        <copy todir="${docs.dest}/classes/examples" filtering="no">
+            <fileset dir="${build.dest}/examples">
+                <include name="MatcherDemoApplet.class"/>
+            </fileset>
+        </copy>
+        <mkdir dir="${docs.dest}/classes/org"/>
+        <copy todir="${docs.dest}/classes/org" filtering="no">
+            <fileset dir="${build.dest}/org">
+                <include name="**/*.class"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <!-- package target -->
+
+    <target name="package" depends="jar,javadocs,docs"
+            description="Creates a distribution directory tree.">
+        <mkdir dir="${final.dir}"/>
+        <copy todir="${final.dir}/src">
+            <fileset dir="${code.src}"/>
+        </copy>
+	<!-- BEGIN_REMOVE_THIS -->
+	<!-- Remove this when there's a first draft of the manual. -->
+        <copy todir="${final.dir}/docs">
+            <fileset dir="${docs.dest}">
+              <exclude name="manual/**"/>
+	    </fileset>
+        </copy>
+	<!-- END_REMOVE_THIS -->
+
+        <copy file="${top.dir}/build.xml" tofile="${final.dir}/build.xml"/>
+        <copy file="${top.dir}/build.properties"
+	 tofile="${final.dir}/build.properties"/>
+
+        <copy file="${top.dir}/LICENSE" tofile="${final.dir}/LICENSE"/>
+        <copy file="${top.dir}/ISSUES" tofile="${final.dir}/ISSUES"/>
+        <copy file="${top.dir}/CHANGES" tofile="${final.dir}/CHANGES"/>
+        <copy file="${top.dir}/COMPILE" tofile="${final.dir}/COMPILE"/>
+        <copy file="${top.dir}/CONTRIBUTORS"
+              tofile="${final.dir}/CONTRIBUTORS"/>
+        <copy file="${top.dir}/README" tofile="${final.dir}/README"/>
+        <copy file="${top.dir}/STYLE" tofile="${final.dir}/STYLE"/>
+        <copy file="${top.dir}/TODO" tofile="${final.dir}/TODO"/>
+        <copy file="${top.dir}/${final.name}.jar" tofile="${final.dir}/${final.name}.jar"/>
+    </target>
+
+    <!-- package-zip target.  Packages the distribution with ZIP -->
+
+    <target name="package-zip" depends="package"
+            description="Packages the distribution as a zip file.">
+        <zip zipfile="${top.dir}/${final.name}.zip" basedir="${top.dir}/"
+             includes="**/${final.name}/**" excludes="**/.cvsignore"/>
+    </target>
+    
+    <!-- Packages the distribution with TAR-GZIP -->
+
+    <target name="package-tgz" depends="package"
+            description="Packages the distribution as a gzipped tar file.">
+        <tar tarfile="${top.dir}/${final.name}.tar"
+             basedir="${top.dir}" excludes="**/**">
+          <tarfileset dir="${final.dir}/..">
+            <include name="${final.name}/**"/>
+            <exclude name="**/.cvsignore"/>
+          </tarfileset>
+        </tar>
+        <gzip zipfile="${top.dir}/${project}-${version}.tar.gz" src="${top.dir}/${project}-${version}.tar"/>
+    </target>
+    
+    <!-- Packages the distribution with ZIP and TAG-GZIP -->
+
+    <target name="package-all" depends="package-zip, package-tgz">
+    </target>
+
+    <!-- Makes an attempt to clean up a little. -->
+
+    <target name="clean"
+	    description="Removes generated artifacts from source tree.">
+        <delete dir="${build.dest}"/>
+        <delete dir="${javadoc.destdir}"/>
+        <delete dir="${final.dir}"/>
+        <delete file="${top.dir}/${final.name}.jar"/>
+        <delete file="${top.dir}/${final.name}.tar"/>
+        <delete file="${top.dir}/${final.name}.tar.gz"/>
+        <delete file="${top.dir}/${final.name}.zip"/>
+        <delete>
+          <fileset dir="${top.dir}" includes="velocity.log*"/>
+        </delete>
+
+    </target>
+</project>

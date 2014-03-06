@@ -1,0 +1,76 @@
+$Id: README,v 1.5 2003/12/29 02:27:55 dfs Exp $
+
+Quick Overview
+--------------
+
+CHANGES - lists recent changes to the source code
+COMPILE - contains quick instructions for building the library
+CONTRIBUTORS - lists people who have contributed to developing the code
+ISSUES  - contains a list of known bugs
+KEYS    - lists PGP keys used to sign releases
+LICENSE - the license defining the terms of use of the software
+README  - this file
+STYLE   - a set of guidelines for developers of the code
+TODO    - lists planned or possible changes/additions
+
+build/   - directory containing the files necessary to build the software
+src/java - directory containing the library source, example programs, and
+           a utility program for converting old ORO source to Jakarta-ORO
+docs/    - directory where generated documentation is stored
+classes/ - directory created when building the library; contains the class
+           files
+
+Description
+-----------
+
+The Jakarta-ORO Java classes are a set of text-processing Java classes
+that provide Perl5 compatible regular expressions, AWK-like regular
+expressions, glob expressions, and utility classes for performing
+substitutions, splits, filtering filenames, etc.  This library is
+the successor to the OROMatcher, AwkTools, PerlTools, and TextTools
+libraries from ORO, Inc. (www.oroinc.com).  They have been donated to
+the Jakarta Project by Daniel Savarese (www.savarese.org), the
+copyright holder of the original oroinc.com ORO libraries.  Daniel
+will continue to participate in their development under the Jakarta
+Project.
+
+
+Building
+--------
+
+Build instructions are in the COMPILE file.  For the impatient, execute
+build.sh in the build directory.
+
+
+Converting Old Code
+-------------------
+
+If you need to migrate old source that uses the com.oroinc package
+prefixes, you can use the provided oroToApache program from the
+src/tools directory to automate the conversion of your source code.
+
+
+Brief History (for the curious)
+------------------------------
+
+ORO, Inc. was a Java tools company that started in 1997 and stopped
+doing business a year and a half later when the tools market didn't
+pan out as well as anticipated.  Other tools companies disappeared at
+about the same time included, including JScape.  So it goes.
+
+ORO produced several Java class libraries that became very popular
+among Java developers and were licensed by companies such as IBM,
+Compaq, AOL, Netscape, and you get the picture.  Daniel Savarese, one
+of ORO's founders, continued maintaining these libraries after ORO
+dissolved but did not have time to provide adequate support and
+feature improvements for developers.  Because of licensing
+restrictions with other companies, the source code could not be
+immediately released as an open source project.  That is, until now
+(June 2000).
+
+Jakarta-ORO combines all of the former ORO text processing libraries
+into one package under the Apache Software License.  The software was
+donated to the Apache Software Foundation because of the great strides
+they have made for server-side Java.  The largest group of developers
+using the ORO text processing libraries are servlet developers, so it
+seemed like a perfect fit.

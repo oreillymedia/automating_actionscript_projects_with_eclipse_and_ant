@@ -1,0 +1,5 @@
+$Id: ISSUES,v 1.1 2003/01/03 20:11:47 dfs Exp $
+
+o It is possible that Perl5Util may not handle backslashing properly
+  for certain rare cases.  Need to collect bug reports on this count
+  and fix it if this is true.

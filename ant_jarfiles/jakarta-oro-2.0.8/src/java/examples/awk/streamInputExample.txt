@@ -1,0 +1,17 @@
+
+
+Many programmers believe C++ is too complicated for its own good and prefer
+to avoid its more obscure and confusing features.  In fact, some programmers
+are so fed up with the language that they will only program in Java, even
+though Java is still very immature and dog-slow.  That is not to say that
+Java is necessarily a better language than C++, but rather that Java simply
+has a stronger appeal to the tired C++ programmer.
+
+
+C++ is an object-oriented descendent of C.  Being derived from C gave it
+one marvelous feature that Java lacks: the C preprocessor.  C++ programmers
+that have converted to Java are banging their heads against their keyboards
+because they do not have a true conditional compilation mechanism.  Of
+course, the lack of enumerations is also a great pain, although tolerable to
+some.
+

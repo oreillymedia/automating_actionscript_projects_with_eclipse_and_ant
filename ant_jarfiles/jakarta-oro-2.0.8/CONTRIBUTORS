@@ -1,0 +1,22 @@
+$Id: CONTRIBUTORS,v 1.7 2002/06/27 22:43:39 dfs Exp $
+
+Daniel Savarese <dfs at savarese.org> is the original author of the
+OROMatcher, PerlTools, AwkTools, and TextTools packages that became
+the Jakarta-ORO project.
+
+Jon Stevens <jon at collab.net> helped prepare the first release of
+jakarta-oro and is a constant help in keeping the project consistent
+with the Jakarta project as a whole.
+
+Takashi Okamoto <tokamoto at rd.nttdata.co.jp> has contributed a unicode
+character class fix and an initial posix character class implementation.
+
+Mark Murphy <markm at tyrell.com> has contributed performance
+improvements to Perl5Substitution as well as adding support for
+\UuLlE and escaping of $.
+
+Michael Davey <michael.davey at coderage.org> fixed some documentation and
+added a missing int substitute(...) method to Perl5Util.
+
+Harald Kuhn <harald at ontopia.net> updated
+MatchActionProcessor.processMatches() to accommodate character encodings.

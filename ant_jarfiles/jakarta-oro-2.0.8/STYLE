@@ -1,0 +1,62 @@
+$Id: STYLE,v 1.1.1.1 2000/07/23 23:08:28 jon Exp $
+
+The two primary design objectives of OROMatcher (what is now
+org.apache.oro.text.regex) are:
+  1) be as compatible as possible with Perl
+  2) be as efficient as possible in meeting objective 1 while
+     maintaining clean object-oriented interfaces and avoiding extraneous
+     features.
+
+We're lagging behind on 1 right now.  The package is only Perl 5.003
+compatible and needs to be updated to Perl 5.6.  Number 2 has no
+bearing on how pretty the implementation is.  The external interfaces
+to the library are what need to be pretty.  The implementation as it
+stands is ugly ugly ugly and will likely remain so for the rest of
+eternity because of the very nature of Perl regular expressions.
+
+CODING CONVENTIONS
+
+The source code follows a set of conventions that must be observed by
+all new additions and modifications for the sake of maintaining a
+consistent style.
+
+  o Static final variable names must be all upper case, with word
+    boundaries delimited by underscores.  For example:
+	  public static final int MY_STATIC_FINAL_CONSTANT = 0;
+
+  o All method names and variables that are not constants must start
+    with a lower case letter, with word boundaries delimited by using an
+    upper case letter to start the next word.  For example:
+	  public void myMethodName() { }
+
+  o All class names must start with an upper case letter followed by
+    lower case letters, with word boundaries delimited by an upper
+    case letter to start the next word.  For example:
+	 public class MyClassName { }
+
+  o Private members (variables and methods) must be prefixed by two
+    underscores.  For example:
+	  private int __myPrivateVariable;
+
+  o Protected members (variables and methods) must be prefixed and
+    suffixed by one underscore.  For example:
+	  protected int _myProtectedVariable_;
+
+  o Package local members (variables and methods) must be prefixed
+    by one underscore.  For example:
+	  int _myPackageVariable;
+
+  o Public members (variables and methods) have no underscore prefixes
+    or suffixes.  For example:
+	  public int myPublicMethod() { return 1; }
+
+  o All public and protected members (methods and variables) must be
+    fully documented so that someone who does not have access to the
+    source code will be able to use the methods, variables, and
+    classes without ambiguity.
+
+  o The code uses GNU-style indentation.  The best way to ensure this,
+    is to use Emacs java-mode and add the following to your .emacs:
+	(add-hook 'java-mode-hook '(lambda()
+                             (c-make-styles-buffer-local)
+                             (setq c-basic-offset 2)))

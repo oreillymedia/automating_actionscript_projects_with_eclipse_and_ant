@@ -1,0 +1,7 @@
+1;Trenton;New Jersey
+2;Annapolis;Maryland
+3;Austin;Texas
+4;Richmond;Virginia
+5;Harrisburg;Pennsylvania
+6;Honolulu;Hawaii
+7;Santa Fe;New Mexico

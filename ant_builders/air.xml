@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Compiling to AIR" basedir=".">
+
+	<!-- Load project.properties file -->
+	<import file="build.xml" as="build" />
+	<property file="ant/air.properties" />
+	<property file="ant/certificate.properties" />
+
+	<target name="clean">
+		<delete dir="${project.build.path}" />
+		<delete dir="${project.publish.path}" />
+		<eclipse.refreshLocal resource="${project.name}" depth="infinite" />
+	</target>
+
+	<target name="make-dirs">
+		<mkdir dir="${project.build.path}" />
+		<mkdir dir="${project.publish.path}" />
+		<eclipse.refreshLocal resource="${project.name}" depth="infinite" />
+	</target>
+
+	<target name="air-create-new-certificate">
+		<mkdir dir="${certificate.location.path}" />
+		<java jar="${sdk.adt.compiler}" fork="true" failonerror="true" logError="true">
+			<arg value="-certificate" />
+			<arg value="-cn" />
+			<arg value="${certificate.name}" />
+			<arg value="-ou" />
+			<arg value="${certificate.organisation.unit}" />
+			<arg value="-o" />
+			<arg value="${certificate.organisation.name}" />
+			<arg value="-c" />
+			<arg value="${certificate.organisation.country}" />
+			<arg value="-validityPeriod" />
+			<arg value="${certificate.validity.years}" />
+			<arg value="${certificate.organisation.keystrength}" />
+			<arg value="${certificate.location.path}${file.separator}${certificate.name}.${certificate.extension}" />
+			<arg value="${certificate.password}" />
+		</java>
+		<growl message="Created a new Self Signed Certificate" />
+		<eclipse.refreshLocal resource="${project.name}" depth="infinite" />
+	</target>
+
+	<target name="compile-to-air" description="Compile an SWF for AIR use" depends="build.create-timestamp, make-dirs">
+		<java jar="${sdk.mxmlc.compiler}" fork="true" failonerror="true">
+			<arg value="-debug=false" />
+			<arg value="-optimize=true" />
+			<arg value="+configname=air" />
+			<arg value="-swf-version=12" />
+			<arg value="-verbose-stacktraces=true" />
+			<arg value="+flexlib=${sdk.libs.framework}" />
+			<arg value="-source-path=${project.src.path}" />
+			<arg value="-library-path=${sdk.libs.location}" />
+			<arg value="-file-specs=${project.classpath}${project.document.class}${project.file.extension}" />
+			<arg value="-output=${project.build.path}${file.separator}${project.document.class}.swf" />
+		</java>
+		<property name="project.output.swf" value="${project.document.class}.swf" />
+		<growl message="Compiling SWF for AIR completed." />
+		<eclipse.refreshLocal resource="${project.name}" depth="infinite" />
+	</target>
+
+	<target name="air-test-app" depends="compile-to-air">
+		<exec executable="${sdk.adl.compiler}">
+			<arg value="${air.app.descriptor}" />
+			<arg value="${project.build.path}" />
+		</exec>
+		<growl message="Testing Application in AIR (Desktop)." />
+	</target>
+
+	<target name="pakage-to-air" depends="compile-to-air">
+		<java jar="${sdk.adt.compiler}" fork="true" failonerror="true">
+			<arg value="-package" />
+			<arg value="-storetype" />
+			<arg value="pkcs12" />
+			<arg value="-keystore" />
+			<arg value="${certificate.location.path}${file.separator}${certificate.name}.${certificate.extension}" />
+			<arg value="-storepass" />
+			<arg value="${certificate.password}" />
+			<arg value="${project.publish.path}${file.separator}${air.app.file}" />
+			<arg value="${air.app.descriptor}" />
+			<arg value="-C" />
+			<arg value="${project.build.path}" />
+			<arg value="${project.output.swf}" />
+			<arg value="-C" />
+			<arg value="${project.assets.path}" />
+			<arg value="icons" />
+		</java>
+		<growl message="Packaging AIR Application completed." />
+		<eclipse.refreshLocal resource="${project.name}" depth="infinite" />
+	</target>
+
+
+</project>
